@@ -8,9 +8,8 @@ class Schedule
 	
 	/**
 	 * @param array $aRules An array of Rule objects defining the schedule.
-	 * @param \DateTime $dDate Reference DateTime. Needed to determine variable Temporal Containers, such as Months.
 	 */
-	public function __construct(array $aRules = [], \DateTime $dDate = null)
+	public function __construct(array $aRules = [])
 	{
 		$this->Rules = [];
 		
@@ -19,13 +18,9 @@ class Schedule
 			$this->addRule($oRule);
 		}
 		
-		$this->Date = $dDate;
-		if ($this->Date == null)
-		{
-			$this->Date = new \DateTime();
-		}
-		
+		$this->Items = null;
 		$this->Intersections = null;
+		
 	}
 	
 	public function addRule(Rule $oRule)
@@ -43,20 +38,77 @@ class Schedule
 	
 	public function getOccurrences(int $iAmount, \DateTime $dDateTime = null) : array
 	{
+		$aOccurrences = [];
 		
+		if ($dDateTime == null)
+		{
+			$dDateTime = new \DateTime();
+		}
+		
+		$dNextDate = $dDateTime;
+		
+		while (count($aOccurrences) < $iAmount)
+		{
+			$dNextDate = $this->getNextOccurrence($dNextDate);
+			$aOccurrences[] = $dNextDate;			
+		}
+		
+		return $aOccurrences;
 	}
 	
 	public function getNextOccurrence(\DateTime $dDateTime = null) : \DateTime
 	{
+		if ($dDateTime == null)
+		{
+			$dDateTime = new \DateTime();
+		}
+		
+		$i = 0;
+		while ($i < 1000000) //Reasonable max check?
+		{
+			$bIsValid = false;
+			
+			while(!$bIsValid)
+			{
+				$bIsValid = true;
+				$aIntersection = $this->getIntersection($i);
+				foreach ($aIntersection as $oItem)
+				{
+					if (!$oItem->isValid($dDateTime))
+					{
+						$bIsValid = false;
+					}
+				}
+				
+				if (!$bIsValid)
+				{
+					$i++;
+				}
+			}
+			
+			$dNextTime = $this->toDateTime($aIntersection, $dDateTime);
+			
+			if ($dDateTime < $dNextTime)
+			{
+				return $dNextTime;
+			}
+			
+			if ($i >= $this->getPeriodicity())
+			{
+				throw new Exception\NotImplementedException("No current support for retrieving occurrences beyond the maximum specified temporal container.");
+			}
+			
+			$i++;
+		}
 		
 	}
 	
 	public function checkTrigger(\DateTime $dDateTime = null) : bool
 	{
-	
+		throw new Exception\NotImplementedException("Trigger checking not implemented yet.");
 	}
 	
-	protected function getIntersection(int $iItem) : array
+	public function getIntersection(int $iItem) : array
 	{
 		if ($this->Items == null)
 		{
@@ -106,7 +158,7 @@ class Schedule
 		
 		foreach ($this->Rules as $sRuleName => $oRule)
 		{
-			$this->Items[$sRulesName] = $oRule->getItems();
+			$this->Items[$sRuleName] = $oRule->getItems();
 		}
 		
 		$this->Intersections = [];
@@ -119,8 +171,34 @@ class Schedule
 		
 	}
 	
-	protected function toDateTime(array $aTemporalIntersection) : \DateTime
+	protected function toDateTime(array $aTemporalIntersection, \DateTime $dDateTime = null) : \DateTime
 	{
+		if ($dDateTime == null)
+		{
+			$dNewDate = new \DateTime();
+		}
+		else
+		{
+			$dNewDate = clone $dDateTime;
+		}
 		
+		foreach ($aTemporalIntersection as $oItem)
+		{
+			$dNewDate = $oItem->modifyDate($dNewDate);
+		}
+		
+		return $dNewDate;
+	}
+	
+	protected function getPeriodicity() : int
+	{
+		$iPeriod = 1;
+		
+		foreach ($this->Rules as $oRule)
+		{
+			$iPeriod = $iPeriod * $oRule->count();
+		}
+		
+		return $iPeriod;
 	}
 }

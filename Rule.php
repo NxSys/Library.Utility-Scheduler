@@ -11,17 +11,17 @@ class Rule
 	public $End;
 	public $Set;
 	
-	public function __construct(TemporalInterface $oContainer,
-								TemporalInterface $oRecurrence,
+	public function __construct(TemporalInterface $oRecurrence,
+								TemporalInterface $oContainer,
 								int $iInterval = 0,
 								int $iStart = 0,
-								int $iEnd = -1,
+								int $iEnd = null,
 								Set $oSet = null)
 	{
 		$this->Container = $oContainer;
 		$this->Recurrence = $oRecurrence;
 		
-		if (!$this->Container->bounds($this->Recurrence))
+		if (!$this->Container::contains($this->Recurrence))
 		{
 			throw new Exception\InvalidRuleException("Temporal Containers must bound the specified Temporal Recurrence. You cannot have a Rule that triggers on Hours in a Minute, or Days in a Day.");
 		}
@@ -29,10 +29,15 @@ class Rule
 		$this->Interval = $iInterval;
 		$this->Start = $iStart;
 		$this->End = $iEnd;
+		
+		if ($this->End == null)
+		{
+			$this->End = $this->Container::count($this->Recurrence);
+		}
 		$this->Set = $oSet;
 	}
 	
-	public function getItems(\DateTime $dDate = null) : array
+	public function getItems() : array
 	{
 		if ($this->hasSet())
 		{
@@ -41,12 +46,20 @@ class Rule
 		}
 		else
 		{
-			if ($dDate == null)
-			{
-				$dDate = new \DateTime();
-			}
-			
-			return $this->Container($dDate)->getItems($this->Recurrence, $this->Interval, $this->Start, $this->End);
+			return $this->Container::getItems($this->Recurrence, $this->Interval, $this->Start, $this->End);
+		}
+	}
+	
+	public function count() : int
+	{
+		if ($this->hasSet())
+		{
+			//@TODO: Check for Sets
+			throw new Exception\NotImplementedException("Rule set handling not yet implemented.");
+		}
+		else
+		{
+			return $this->Container::count($this->Recurrence);
 		}
 	}
 	
@@ -89,32 +102,28 @@ class Rule
 		
 		if (($this->Start >= 0 && $oRule->Start < 0) || ($this->Start < 0 && $oRule->Start >= 0) || ($this->End >= 0 && $oRule->End < 0) || ($this->End < 0 && $oRule->End >= 0))
 		{
-			if ($this->Container::isVariable() || $oRule->Container::isVariable())
-			{
-				throw new Exception\RuleConflictException("Unable to automatically reduce Rules with conflicting recurrence directionality within a variable Temporal container (e.g., a Month). Either use identical directionality (both Rules positive, or both Rules negative), or make a unified Rule.");
-			}
-			
+			throw new Exception\NotImplementedException("Negative bounds not yet implemented.");
 			//Convert all Starts/Ends to positive directionalityy.
 			//At this point all checks are complete, so modification of this Rule is fine. (Leave secondary Rule as is.)
 			
 			if ($this->Start < 0)
 			{
-				$this->Start += $this->Container->count($this->Recurrence);
+				$this->Start += $this->Container::count($this->Recurrence);
 			}
 			
 			if ($this->End < 0)
 			{
-				$this->End += $this->Container->count($this->Recurrence);
+				$this->End += $this->Container::count($this->Recurrence);
 			}
 			
 			if ($oRule->Start < 0)
 			{
-				$iOtherStart = $oRule->Start + $oRule->Container->count($oRule->Recurrence);
+				$iOtherStart = $oRule->Start + $oRule->Container::count($oRule->Recurrence);
 			}
 			
 			if ($oRule->End < 0)
 			{
-				$iOtherEnd = $oRule->End + $oRule->Container->count($oRule->Recurrence);
+				$iOtherEnd = $oRule->End + $oRule->Container::count($oRule->Recurrence);
 			}
 		}
 		

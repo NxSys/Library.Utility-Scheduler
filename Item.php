@@ -15,6 +15,21 @@ class Item
 	
 	public function checkMatch(\DateTime $dDate = null) : bool
 	{
-		return $this->Container->checkMatch($this->Recurrence, $this->Value, $dDate);
+		return $this->Container::checkMatch($this->Recurrence, $this->Value, $dDate);
+	}
+	
+	public function isValid(\DateTime $dDate = null) : bool
+	{
+		return $this->Container::isValid($this->Recurrence, $this->Value, $dDate);
+	}
+	
+	public function modifyDate(\DateTime $dDateTime = null) : \DateTime
+	{
+		if ($dDateTime == null)
+		{
+			$dDateTime = new \DateTime();
+		}
+		
+		return $this->Container::modifyDate($this->Recurrence, $this->Value, $dDateTime);
 	}
 }
