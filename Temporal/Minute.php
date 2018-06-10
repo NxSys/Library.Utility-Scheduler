@@ -68,4 +68,20 @@ class Minute extends Instant implements TemporalInterface
 		
 		return $dDate;
 	}
+	
+	public static function resetDate(\DateTime $dDate) : \DateTime
+	{
+		$iSecond = (int) $dDate->format('s');
+		//$iMinute = (int) $dDate->format('i');
+		$iHour = (int) $dDate->format('H');
+		$dDate->setTime($iHour, 0, $iSecond);
+		return $dDate;
+	}
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime
+	{
+		$oPeriod = new \DateInterval("PT1M");
+		$dDate->add($oPeriod);
+		return $dDate;
+	}
 }

@@ -191,4 +191,16 @@ class Year extends Instant implements TemporalInterface
 		throw new Exception\NotImplementedException("Unable to set date/time based on years.");
 	}
 	
+	public static function resetDate(\DateTime $dDate) : \DateTime
+	{
+		throw new Exception\TemporalException("Unable to reset (loop over) Years, as they are currently the largest supported temporal unit.");
+	}
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime
+	{
+		$oPeriod = new \DateInterval("P1Y");
+		$dDate->add($oPeriod);
+		return $dDate;
+	}
+	
 }

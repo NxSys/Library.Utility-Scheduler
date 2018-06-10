@@ -163,4 +163,20 @@ class Month extends Instant implements TemporalInterface
 		throw new Exception\NotImplementedException("Unable to set date/time based on months.");
 	}
 	
+	public static function resetDate(\DateTime $dDate) : \DateTime
+	{
+		$iDay = (int) $dDate->format('d');
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		$dDate->setDate($iYear, 1, $iDay);
+		return $dDate;
+	}
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime
+	{
+		$oPeriod = new \DateInterval("P1M");
+		$dDate->add($oPeriod);
+		return $dDate;
+	}
+	
 }

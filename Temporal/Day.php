@@ -126,7 +126,7 @@ class Day extends Instant implements TemporalInterface
 	}
 	
 	public static function modifyDate(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : \DateTime
-	{
+	{	
 		$iSecond = (int) $dDate->format('s');
 		$iMinute = (int) $dDate->format('i');
 		$iHour = (int) $dDate->format('H');
@@ -154,6 +154,22 @@ class Day extends Instant implements TemporalInterface
 			return $dDate;
 		}
 		
+		return $dDate;
+	}
+	
+	public static function resetDate(\DateTime $dDate) : \DateTime
+	{
+		$iDay = (int) $dDate->format('d');
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		$dDate->setDate($iYear, $iMonth, 1);
+		return $dDate;
+	}
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime
+	{
+		$oPeriod = new \DateInterval("P1D");
+		$dDate->add($oPeriod);
 		return $dDate;
 	}
 }

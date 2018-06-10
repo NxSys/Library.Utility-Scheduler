@@ -21,6 +21,14 @@ class Schedule
 		$this->Items = null;
 		$this->Intersections = null;
 		
+		$this->TemporalPrecedence = ["Second" => 0,
+									 "Minute" => 1,
+									 "Hour" => 2,
+									 "Day" => 3,
+									 "Week" => 4,
+									 "Month" => 5,
+									 "Year" => 6];
+		
 	}
 	
 	public function addRule(Rule $oRule)
@@ -50,7 +58,9 @@ class Schedule
 		while (count($aOccurrences) < $iAmount)
 		{
 			$dNextDate = $this->getNextOccurrence($dNextDate);
-			$aOccurrences[] = $dNextDate;			
+			$aOccurrences[] = $dNextDate;
+			$dNextDate = clone $dNextDate;
+			$dNextDate = Temporal\Second::incrementDate($dNextDate);
 		}
 		
 		return $aOccurrences;
@@ -63,18 +73,29 @@ class Schedule
 			$dDateTime = new \DateTime();
 		}
 		
+		$dReferenceDateTime = clone $dDateTime;
+		$dReferenceDateTime = $this->resetReferenceDate($dReferenceDateTime);
+		
 		$i = 0;
-		while ($i < 1000000) //Reasonable max check?
+		$iPeriodicity = $this->getPeriodicity();
+		while ($i < $iPeriodicity * 2) //If this loops twice, something is wrong.
 		{
 			$bIsValid = false;
 			
 			while(!$bIsValid)
 			{
+				if ($i == $iPeriodicity)
+				{
+					$oHighestContainer = $this->getHighestContainer();
+					$dReferenceDateTime = $oHighestContainer->incrementDate($dReferenceDateTime);
+					$dReferenceDateTime = $this->resetReferenceDate($dReferenceDateTime);
+				}
+				
 				$bIsValid = true;
 				$aIntersection = $this->getIntersection($i);
 				foreach ($aIntersection as $oItem)
 				{
-					if (!$oItem->isValid($dDateTime))
+					if (!$oItem->isValid($dReferenceDateTime))
 					{
 						$bIsValid = false;
 					}
@@ -86,21 +107,14 @@ class Schedule
 				}
 			}
 			
-			$dNextTime = $this->toDateTime($aIntersection, $dDateTime);
-			
-			if ($dDateTime < $dNextTime)
+			$dNextTime = $this->toDateTime($aIntersection, $dReferenceDateTime);
+			if ($dDateTime <= $dNextTime)
 			{
 				return $dNextTime;
 			}
 			
-			if ($i >= $this->getPeriodicity())
-			{
-				throw new Exception\NotImplementedException("No current support for retrieving occurrences beyond the maximum specified temporal container.");
-			}
-			
 			$i++;
 		}
-		
 	}
 	
 	public function checkTrigger(\DateTime $dDateTime = null) : bool
@@ -162,8 +176,6 @@ class Schedule
 		}
 		
 		$this->Intersections = [];
-		
-		
 	}
 	
 	protected function sortRules()
@@ -200,5 +212,38 @@ class Schedule
 		}
 		
 		return $iPeriod;
+	}
+	
+	protected function getHighestContainer(): TemporalInterface
+	{
+		$iHighestIndex = 0;
+		$oHighest = new Temporal\Second;
+		
+		foreach ($this->Rules as $oRule)
+		{
+			if ($this->TemporalPrecedence[$oRule->Container::getName()] > $iHighestIndex)
+			{
+				$iHighestIndex = $this->TemporalPrecedence[$oRule->Container::getName()];
+				$oHighest = $oRule->Container;
+			}
+		}
+		
+		return $oHighest;
+	}
+	
+	protected function resetReferenceDate(\DateTime $dReferenceDate) : \DateTime
+	{
+		$oHighestContainer = $this->getHighestContainer();
+		
+		foreach ($this->TemporalPrecedence as $sTemporalUnit => $iPrecedence)
+		{
+			if ($sTemporalUnit == $oHighestContainer::getName())
+			{
+				return $dReferenceDate;
+			}
+			
+			$sTemporalClass = "NxSys\\Library\\Utility\\Scheduler\\Temporal\\".$sTemporalUnit;
+			$dReferenceDate = $sTemporalClass::resetDate($dReferenceDate);
+		}
 	}
 }

@@ -19,4 +19,8 @@ interface TemporalInterface
 	public static function isValid(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : bool;
 	
 	public static function modifyDate(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : \DateTime;
+	
+	public static function resetDate(\DateTime $dDate) : \DateTime;
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime;
 }

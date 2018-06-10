@@ -149,4 +149,14 @@ class Week extends Instant implements TemporalInterface
 	{
 		throw new Exception\NotImplementedException("Unable to set date/time based on weeks.");
 	}
+	
+	public static function resetDate(\DateTime $dDate) : \DateTime
+	{
+		throw new Exception\NotImplementedException("Looping over weeks not yet implemented.");
+	}
+	
+	public static function incrementDate(\DateTime $dDate) : \DateTime
+	{
+		throw new Exception\NotImplementedException("Incrementing weeks not yet implemented.");
+	}
 }

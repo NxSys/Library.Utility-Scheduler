@@ -42,11 +42,9 @@ abstract class Instant implements TemporalInterface
 			throw new Exception\NotImplementedException("Negative intervals or bounds not yet implemented.");
 		}
 		
-		$iCount = static::count($oRecurrence);
-		
 		$iItems = [];
 		
-		for ($iCurrent = $iStart; $iCurrent <= $iEnd; $iCurrent += $iInterval)
+		for ($iCurrent = $iStart; $iCurrent < $iEnd; $iCurrent += $iInterval)
 		{
 			$sCalledClass = get_called_class();
 			$iItems[] = new Item(new $sCalledClass, $oRecurrence, $iCurrent);

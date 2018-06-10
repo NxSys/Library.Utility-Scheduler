@@ -59,7 +59,7 @@ class Rule
 		}
 		else
 		{
-			return $this->Container::count($this->Recurrence);
+			return count($this->getItems());
 		}
 	}
 	
