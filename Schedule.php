@@ -5,6 +5,8 @@ namespace NxSys\Library\Utility\Scheduler;
 class Schedule
 {
 	protected $Rules;
+	protected $Items;
+	protected $Intersections;
 	
 	/**
 	 * @param array $aRules An array of Rule objects defining the schedule.
@@ -19,7 +21,6 @@ class Schedule
 		}
 		
 		$this->Items = null;
-		$this->Intersections = null;
 		
 		$this->TemporalPrecedence = ["Second" => 0,
 									 "Minute" => 1,
@@ -31,6 +32,10 @@ class Schedule
 		
 	}
 	
+	/**
+	 * Adds a rule to the Schedule.
+	 * @param Rule $oRule
+	 */
 	public function addRule(Rule $oRule)
 	{
 		$sRuleName = $oRule->getName();
@@ -40,10 +45,17 @@ class Schedule
 		}
 		else
 		{
-			$this->Rules[$sRuleName] = $oRule;
+			$this->Rules[$sRuleName] = $oRule;	
+			$this->sortRules();
 		}
 	}
 	
+	/**
+	 * Gets the next N occurrences of the Schedule that occur after the specified DateTime.
+	 * @param int $iAmount Number of occurrences to lookup.
+	 * @param \DateTime $dDateTime DateTime to get occurrences from. The first occurrence will be the earliest that is after (or exactly equal to) the specified DateTime. If no DateTime is provided, the current time is used.
+	 * @return \DateTime[] Array of DateTimes
+	 */
 	public function getOccurrences(int $iAmount, \DateTime $dDateTime = null) : array
 	{
 		$aOccurrences = [];
@@ -55,9 +67,10 @@ class Schedule
 		
 		$dNextDate = $dDateTime;
 		
-		while (count($aOccurrences) < $iAmount)
+		$iCounter = 0;
+		for ($iOccurrences = 0;$iOccurrences < $iAmount;$iOccurrences++)
 		{
-			$dNextDate = $this->getNextOccurrence($dNextDate);
+			$dNextDate = $this->getNextOccurrence($dNextDate, $iCounter); //Counter is passed by reference
 			$aOccurrences[] = $dNextDate;
 			$dNextDate = clone $dNextDate;
 			$dNextDate = Temporal\Second::incrementDate($dNextDate);
@@ -66,7 +79,13 @@ class Schedule
 		return $aOccurrences;
 	}
 	
-	public function getNextOccurrence(\DateTime $dDateTime = null) : \DateTime
+	/**
+	 * Gets the next occurrence of the Schedule that is after the specified DateTime.
+	 * NOTE: This function has a second parameter, which is modified by reference. It is used as a counter to track the Schedule's position in the Intersection list. This greatly increases performance when retrieving successive occurrences in Schedules with a large number of Intersections, but if used incorrectly it can result in occurrences being skipped. It is used internally by getOccurrences(), and shouldn't be used by external callers.
+	 * @param \DateTime $dDateTime DateTime to get occurrences from. The returned occurrence will be the earliest that is after (or exactly equal to) the specified DateTime. If no DateTime is provided, the current time is used.
+	 * @return \DateTime
+	 */
+	public function getNextOccurrence(\DateTime $dDateTime = null, &$i = 0) : \DateTime
 	{
 		if ($dDateTime == null)
 		{
@@ -76,7 +95,6 @@ class Schedule
 		$dReferenceDateTime = clone $dDateTime;
 		$dReferenceDateTime = $this->resetReferenceDate($dReferenceDateTime);
 		
-		$i = 0;
 		$iPeriodicity = $this->getPeriodicity();
 		while ($i < $iPeriodicity * 2) //If this loops twice, something is wrong.
 		{
@@ -89,6 +107,7 @@ class Schedule
 					$oHighestContainer = $this->getHighestContainer();
 					$dReferenceDateTime = $oHighestContainer->incrementDate($dReferenceDateTime);
 					$dReferenceDateTime = $this->resetReferenceDate($dReferenceDateTime);
+					$i = 0;
 				}
 				
 				$bIsValid = true;
@@ -107,13 +126,13 @@ class Schedule
 				}
 			}
 			
+			$i++;
+			
 			$dNextTime = $this->toDateTime($aIntersection, $dReferenceDateTime);
 			if ($dDateTime <= $dNextTime)
 			{
 				return $dNextTime;
 			}
-			
-			$i++;
 		}
 	}
 	
@@ -122,11 +141,16 @@ class Schedule
 		throw new Exception\NotImplementedException("Trigger checking not implemented yet.");
 	}
 	
-	public function getIntersection(int $iItem) : array
+	protected function getIntersection(int $iItem) : array
 	{
 		if ($this->Items == null)
 		{
 			$this->populateItems();
+		}
+		
+		if (array_key_exists($iItem, $this->Intersections))
+		{
+			return $this->Intersections[$iItem];
 		}
 		
 		$aIntersection = [];
@@ -136,6 +160,7 @@ class Schedule
 			$aIntersection[$sRuleKey] = $this->recursiveCalculateItem($iItem, $iRuleId);
 		}
 		
+		$this->Intersections[$iItem] = $aIntersection;
 		return $aIntersection;
 	}
 	
@@ -166,8 +191,6 @@ class Schedule
 	
 	protected function populateItems()
 	{
-		$this->sortRules();
-		
 		$this->Items = [];
 		
 		foreach ($this->Rules as $sRuleName => $oRule)
@@ -180,7 +203,9 @@ class Schedule
 	
 	protected function sortRules()
 	{
-		
+		$aPrecedence = $this->TemporalPrecedence;
+		$cPrecedenceCompare = function ($a, $b) use ($aPrecedence) {return $aPrecedence[$a->getName()] - $aPrecedence[$b->getName()];};
+		uasort($this->Rules, $cPrecedenceCompare); //Sort while maintaining associative keys.
 	}
 	
 	protected function toDateTime(array $aTemporalIntersection, \DateTime $dDateTime = null) : \DateTime
