@@ -56,8 +56,7 @@ class Rule
 	{
 		if ($this->hasSet())
 		{
-			//@TODO: Check for Sets
-			throw new Exception\NotImplementedException("Rule set handling not yet implemented.");
+			return $this->Set->getItems();
 		}
 		else
 		{
@@ -69,8 +68,7 @@ class Rule
 	{
 		if ($this->hasSet())
 		{
-			//@TODO: Check for Sets
-			throw new Exception\NotImplementedException("Rule set handling not yet implemented.");
+			return $this->Set->count();
 		}
 		else
 		{
@@ -87,6 +85,23 @@ class Rule
 	{
 		return $this->Set !== null;
 	}
+	
+	public function createSet($iValues = []) : self
+	{
+		$this->Set = new Set($this->Recurrence, $this->Container, $iValues);
+		return $this;
+	}
+	
+	public function addItem($iValue) : self
+	{
+		if (!$this->hasSet())
+		{
+			$this->createSet();
+		}
+		$this->Set->addItem($iValue);
+		return $this;
+	}
+	
 	
 	public function reduce(Rule $oRule)
 	{

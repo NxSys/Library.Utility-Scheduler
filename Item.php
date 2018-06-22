@@ -4,8 +4,8 @@ namespace NxSys\Library\Utility\Scheduler;
 
 class Item
 {
-	public function __construct(TemporalInterface $oContainer,
-								TemporalInterface $oRecurrence,
+	public function __construct(TemporalInterface $oRecurrence,
+								TemporalInterface $oContainer,
 								int $iValue)
 	{
 		$this->Container = $oContainer;

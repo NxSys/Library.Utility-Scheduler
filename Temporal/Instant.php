@@ -47,7 +47,7 @@ abstract class Instant implements TemporalInterface
 		for ($iCurrent = $iStart; $iCurrent < $iEnd; $iCurrent += $iInterval)
 		{
 			$sCalledClass = get_called_class();
-			$iItems[] = new Item(new $sCalledClass, $oRecurrence, $iCurrent);
+			$iItems[] = new Item($oRecurrence, new $sCalledClass, $iCurrent);
 		}
 		
 		return $iItems;
