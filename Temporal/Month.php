@@ -176,7 +176,7 @@ class Month extends Instant implements TemporalInterface
 			$iSecond = (int) ($iValue % 60);
 			$iMinute = (int) (($iValue % 3600) / 60);
 			$iHour = (int) (($iValue % 86400) / 3600);
-			$iDay = (int) ($iValue / 86400);
+			$iDay = (int) ($iValue / 86400) + 1;
 			$dDate->setTime($iHour, $iMinute, $iSecond);
 			$dDate->setDate($iYear, $iMonth, $iDay);
 			return $dDate;
@@ -187,7 +187,7 @@ class Month extends Instant implements TemporalInterface
 			//@TODO: Handle DST
 			$iMinute = (int) ($iValue % 60);
 			$iHour = (int) (($iValue % 1440) / 60);
-			$iDay = (int) ($iValue / 1440);
+			$iDay = (int) ($iValue / 1440) + 1;
 			$dDate->setTime($iHour, $iMinute, $iSecond);
 			$dDate->setDate($iYear, $iMonth, $iDay);
 			return $dDate;
@@ -197,7 +197,7 @@ class Month extends Instant implements TemporalInterface
 		{
 			//@TODO: Handle DST
 			$iHour = (int) ($iValue % 24);
-			$iDay = (int) ($iValue / 24);
+			$iDay = (int) ($iValue / 24) + 1;
 			$dDate->setTime($iHour, $iMinute, $iSecond);
 			$dDate->setDate($iYear, $iMonth, $iDay);
 			return $dDate;
@@ -205,7 +205,7 @@ class Month extends Instant implements TemporalInterface
 		
 		if ($oRecurrence::getName() == "Day")
 		{
-			$dDate->setDate($iYear, $iMonth, $iValue);
+			$dDate->setDate($iYear, $iMonth, $iValue + 1);
 			return $dDate;
 		}
 		
