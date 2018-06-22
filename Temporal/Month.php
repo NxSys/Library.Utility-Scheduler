@@ -211,18 +211,11 @@ class Month extends Instant implements TemporalInterface
 		
 		if ($oRecurrence::getName() == "Week")
 		{
-			throw new Exception\NotImplementedException("Unable to set date/time based on weeks in months.");
+			$iDay = $iValue * 7 + 1;
+			$dDate->setDate($iYear, $iMonth, $iDay);
+			return $dDate;
 		}
 		
-		return $dDate;
-	}
-	
-	public static function resetDate(\DateTime $dDate) : \DateTime
-	{
-		$iDay = (int) $dDate->format('d');
-		$iMonth = (int) $dDate->format('m');
-		$iYear = (int) $dDate->format('Y');
-		$dDate->setDate($iYear, 1, $iDay);
 		return $dDate;
 	}
 	

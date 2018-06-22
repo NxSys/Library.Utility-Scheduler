@@ -37,15 +37,6 @@ class Second extends Instant implements TemporalInterface
 		throw new Exception\TemporalException("Seconds are currently the smallest available temporal unit.");
 	}
 	
-	public static function resetDate(\DateTime $dDate) : \DateTime
-	{
-		//$iSecond = (int) $dDate->format('s');
-		$iMinute = (int) $dDate->format('i');
-		$iHour = (int) $dDate->format('H');
-		$dDate->setTime($iHour, $iMinute, 0);
-		return $dDate;
-	}
-	
 	public static function incrementDate(\DateTime $dDate) : \DateTime
 	{
 		$oPeriod = new \DateInterval("PT1S");

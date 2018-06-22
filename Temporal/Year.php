@@ -231,11 +231,6 @@ class Year extends Instant implements TemporalInterface
 		return $dDate;
 	}
 	
-	public static function resetDate(\DateTime $dDate) : \DateTime
-	{
-		throw new Exception\TemporalException("Unable to reset (loop over) Years, as they are currently the largest supported temporal unit.");
-	}
-	
 	public static function incrementDate(\DateTime $dDate) : \DateTime
 	{
 		$oPeriod = new \DateInterval("P1Y");

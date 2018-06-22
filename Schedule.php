@@ -11,7 +11,7 @@ class Schedule
 	/**
 	 * @param array $aRules An array of Rule objects defining the schedule.
 	 */
-	public function __construct(array $aRules = [])
+	public function __construct(array $aRules = [], array $aTemporalPrecedence = null)
 	{
 		$this->Rules = [];
 		
@@ -22,13 +22,20 @@ class Schedule
 		
 		$this->Items = null;
 		
-		$this->TemporalPrecedence = ["Second" => 0,
-									 "Minute" => 1,
-									 "Hour" => 2,
-									 "Day" => 3,
-									 //"Week" => 4,
-									 "Month" => 5,
-									 "Year" => 6];
+		if ($aTemporalPrecedence == null)
+		{
+			$this->TemporalPrecedence = ["NxSys\\Library\\Utility\\Scheduler\\Temporal\\Second" => 0,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Minute" => 1,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Hour" => 2,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Day" => 3,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Week" => 4,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Month" => 5,
+										 "NxSys\\Library\\Utility\\Scheduler\\Temporal\\Year" => 6];
+		}
+		else
+		{
+			$this->TemporalPrecedence = $aTemporalPrecedence;
+		}
 		
 	}
 	
@@ -204,7 +211,7 @@ class Schedule
 	protected function sortRules()
 	{
 		$aPrecedence = $this->TemporalPrecedence;
-		$cPrecedenceCompare = function ($a, $b) use ($aPrecedence) {return $aPrecedence[$a->getName()] - $aPrecedence[$b->getName()];};
+		$cPrecedenceCompare = function ($a, $b) use ($aPrecedence) {return $aPrecedence[get_class($a->Recurrence)] - $aPrecedence[get_class($b->Recurrence)];};
 		uasort($this->Rules, $cPrecedenceCompare); //Sort while maintaining associative keys.
 	}
 	
@@ -246,9 +253,9 @@ class Schedule
 		
 		foreach ($this->Rules as $oRule)
 		{
-			if ($this->TemporalPrecedence[$oRule->Container::getName()] > $iHighestIndex)
+			if ($this->TemporalPrecedence[get_class($oRule->Container)] > $iHighestIndex)
 			{
-				$iHighestIndex = $this->TemporalPrecedence[$oRule->Container::getName()];
+				$iHighestIndex = $this->TemporalPrecedence[get_class($oRule->Container)];
 				$oHighest = $oRule->Container;
 			}
 		}
@@ -257,18 +264,27 @@ class Schedule
 	}
 	
 	protected function resetReferenceDate(\DateTime $dReferenceDate) : \DateTime
-	{
+	{	
 		$oHighestContainer = $this->getHighestContainer();
+		
+		$sLastTemporalUnit = null;
 		
 		foreach ($this->TemporalPrecedence as $sTemporalUnit => $iPrecedence)
 		{
-			if ($sTemporalUnit == $oHighestContainer::getName())
+			if ($sLastTemporalUnit != null)
+			{
+				if ($sTemporalUnit::doReset(new $sLastTemporalUnit))
+				{
+					$dReferenceDate = $sTemporalUnit::modifyDate(new $sLastTemporalUnit, 0, $dReferenceDate);
+				}
+			}
+			
+			if ($sTemporalUnit == get_class($oHighestContainer))
 			{
 				return $dReferenceDate;
 			}
 			
-			$sTemporalClass = "NxSys\\Library\\Utility\\Scheduler\\Temporal\\".$sTemporalUnit;
-			$dReferenceDate = $sTemporalClass::resetDate($dReferenceDate);
+			$sLastTemporalUnit = $sTemporalUnit;
 		}
 	}
 }

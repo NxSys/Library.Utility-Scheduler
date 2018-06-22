@@ -6,7 +6,7 @@ use NxSys\Library\Utility\Scheduler\TemporalInterface;
 use NxSys\Library\Utility\Scheduler\Exception;
 
 class Week extends Instant implements TemporalInterface
-{
+{	
 	public static function getName() : string
 	{
 		return "Week";
@@ -147,16 +147,79 @@ class Week extends Instant implements TemporalInterface
 	
 	public static function modifyDate(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : \DateTime
 	{
-		throw new Exception\NotImplementedException("Unable to set date/time based on weeks.");
+		$iSecond = (int) $dDate->format('s');
+		$iMinute = (int) $dDate->format('i');
+		$iHour = (int) $dDate->format('H');
+		
+		$iDayOfWeek= (int) $dDate->format('w');
+		
+		$iDay = (int) $dDate->format('d');
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		
+		
+		if ($oRecurrence::getName() == "Second")
+		{
+			throw new Exception\NotImplementedException("Seconds in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Minute")
+		{
+			throw new Exception\NotImplementedException("Minutes in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Hour")
+		{
+			throw new Exception\NotImplementedException("Hours in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Day")
+		{
+			$iDaysToAdd = $iValue - $iDayOfWeek;
+			if ($iDaysToAdd < 0)
+			{
+				$iDaysToAdd += 7;
+			}
+			$sPeriodString = "P" . (string) $iDaysToAdd . "D";
+			$oPeriod = new \DateInterval($sPeriodString);
+			$dDate->add($oPeriod);
+			return $dDate;
+		}
+		
+		
+		return $dDate;
 	}
 	
-	public static function resetDate(\DateTime $dDate) : \DateTime
+	public static function doReset(TemporalInterface $oRecurrence) : bool
 	{
-		throw new Exception\NotImplementedException("Looping over weeks not yet implemented.");
+		if ($oRecurrence::getName() == "Second")
+		{
+			throw new Exception\NotImplementedException("Seconds in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Minute")
+		{
+			throw new Exception\NotImplementedException("Minutes in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Hour")
+		{
+			throw new Exception\NotImplementedException("Hours in weeks not yet implemented.");
+		}
+		
+		if ($oRecurrence::getName() == "Day")
+		{
+			return false;
+		}
 	}
 	
 	public static function incrementDate(\DateTime $dDate) : \DateTime
 	{
-		throw new Exception\NotImplementedException("Incrementing weeks not yet implemented.");
+		$iDayOfWeek= (int) $dDate->format('w');
+		$iDaysToAdd = 7 - $iDayOfWeek;
+		$sPeriodString = "P" . (string) $iDaysToAdd . "D";
+		$oPeriod = new \DateInterval($sPeriodString);
+		$dDate->add($oPeriod);
+		return $dDate;
 	}
 }

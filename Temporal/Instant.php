@@ -58,4 +58,9 @@ abstract class Instant implements TemporalInterface
 	{
 	
 	}
+	
+	public static function doReset(TemporalInterface $oRecurrence) : bool
+	{
+		return true;
+	}
 }
