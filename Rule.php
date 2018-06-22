@@ -11,9 +11,19 @@ class Rule
 	public $End;
 	public $Set;
 	
+	/**
+	 * Represents a rule in a schedule.
+	 * @param TemporalInterface $oRecurrence A Temporal Object representing the recurring Temporal unit, e.g., Minute for Minutes in an Hour.
+	 * @param TemporalInterface $oContainer A Temporal Object representing the containing Temporal unit, e.g., Month for Days in a Month.
+	 * @param int $iInterval How often the rule triggers, e.g., 15 for every 15 Minutes in an Hour.
+	 * @param int $iStart 0-indexed initial position. E.g., 4 for starting on the 5th of a Month, 30 for starting at 30 minutes in an hour.
+	 * @param int $iEnd 0-indexed ending position.
+	 * @param Set A set of explicit items to include. If given, interval/start/end are ignored.
+	 * @throws Exception\InvalidRuleException
+	 */
 	public function __construct(TemporalInterface $oRecurrence,
 								TemporalInterface $oContainer,
-								int $iInterval = 0,
+								int $iInterval = 1,
 								int $iStart = 0,
 								int $iEnd = null,
 								Set $oSet = null)
@@ -24,6 +34,11 @@ class Rule
 		if (!$this->Container::contains($this->Recurrence))
 		{
 			throw new Exception\InvalidRuleException("Temporal Containers must bound the specified Temporal Recurrence. You cannot have a Rule that triggers on Hours in a Minute, or Days in a Day.");
+		}
+		
+		if ($iInterval == 0 && $oSet == null)
+		{
+			throw new Exception\InvalidRuleException("Intervals of 0 cause infinite loops.");
 		}
 		
 		$this->Interval = $iInterval;
