@@ -26,7 +26,7 @@ class Schedule
 									 "Minute" => 1,
 									 "Hour" => 2,
 									 "Day" => 3,
-									 "Week" => 4,
+									 //"Week" => 4,
 									 "Month" => 5,
 									 "Year" => 6];
 		
@@ -239,7 +239,7 @@ class Schedule
 		return $iPeriod;
 	}
 	
-	protected function getHighestContainer(): TemporalInterface
+	public function getHighestContainer(): TemporalInterface
 	{
 		$iHighestIndex = 0;
 		$oHighest = new Temporal\Second;
