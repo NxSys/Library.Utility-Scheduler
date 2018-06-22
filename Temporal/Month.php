@@ -77,6 +77,15 @@ class Month extends Instant implements TemporalInterface
 		
 		$iDaysInMonth = (int) $dDate->format('t');
 		
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		$dFirstDay = clone $dDate;
+		$dFirstDay->setDate($iYear, $iMonth, 1);
+		
+		$iDayOfWeek = (int) $dFirstDay->format('w');
+		
+		$iWeeksInMonth = (int) ceil(($iDaysInMonth - 1 + $iDayOfWeek)/7);
+		
 		if ($oRecurrence::getName() == "Second")
 		{
 			if ($iValue < 0 || $iValue > ($iDaysInMonth*24*60*60 + (60*60)))
@@ -154,7 +163,12 @@ class Month extends Instant implements TemporalInterface
 		
 		if ($oRecurrence::getName() == "Week")
 		{
-			throw new Exception\NotImplementedException("Weeks in Months not yet implemented.");	
+			if ($iValue < 0 || $iValue > $iWeeksInMonth)
+			{
+				return false;
+			}
+			
+			return true;
 		}
 	}
 	
