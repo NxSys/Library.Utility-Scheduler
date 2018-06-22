@@ -160,7 +160,61 @@ class Month extends Instant implements TemporalInterface
 	
 	public static function modifyDate(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : \DateTime
 	{
-		throw new Exception\NotImplementedException("Unable to set date/time based on months.");
+		$iSecond = (int) $dDate->format('s');
+		$iMinute = (int) $dDate->format('i');
+		$iHour = (int) $dDate->format('H');
+		
+		$iDay = (int) $dDate->format('d');
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		
+		$iDaysInMonth = (int) $dDate->format('t');
+		
+		if ($oRecurrence::getName() == "Second")
+		{
+			//@TODO: Handle DST
+			$iSecond = (int) ($iValue % 60);
+			$iMinute = (int) (($iValue % 3600) / 60);
+			$iHour = (int) (($iValue % 86400) / 3600);
+			$iDay = (int) ($iValue / 86400);
+			$dDate->setTime($iHour, $iMinute, $iSecond);
+			$dDate->setDate($iYear, $iMonth, $iDay);
+			return $dDate;
+		}
+		
+		if ($oRecurrence::getName() == "Minute")
+		{
+			//@TODO: Handle DST
+			$iMinute = (int) ($iValue % 60);
+			$iHour = (int) (($iValue % 1440) / 60);
+			$iDay = (int) ($iValue / 1440);
+			$dDate->setTime($iHour, $iMinute, $iSecond);
+			$dDate->setDate($iYear, $iMonth, $iDay);
+			return $dDate;
+		}
+		
+		if ($oRecurrence::getName() == "Hour")
+		{
+			//@TODO: Handle DST
+			$iHour = (int) ($iValue % 24);
+			$iDay = (int) ($iValue / 24);
+			$dDate->setTime($iHour, $iMinute, $iSecond);
+			$dDate->setDate($iYear, $iMonth, $iDay);
+			return $dDate;
+		}
+		
+		if ($oRecurrence::getName() == "Day")
+		{
+			$dDate->setDate($iYear, $iMonth, $iValue);
+			return $dDate;
+		}
+		
+		if ($oRecurrence::getName() == "Week")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on weeks in months.");
+		}
+		
+		return $dDate;
 	}
 	
 	public static function resetDate(\DateTime $dDate) : \DateTime

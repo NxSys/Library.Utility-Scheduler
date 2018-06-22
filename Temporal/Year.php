@@ -188,7 +188,47 @@ class Year extends Instant implements TemporalInterface
 	
 	public static function modifyDate(TemporalInterface $oRecurrence, int $iValue, \DateTime $dDate) : \DateTime
 	{
-		throw new Exception\NotImplementedException("Unable to set date/time based on years.");
+		$iSecond = (int) $dDate->format('s');
+		$iMinute = (int) $dDate->format('i');
+		$iHour = (int) $dDate->format('H');
+		
+		$iDay = (int) $dDate->format('d');
+		$iMonth = (int) $dDate->format('m');
+		$iYear = (int) $dDate->format('Y');
+		
+		$iDaysInMonth = (int) $dDate->format('t');
+		
+		if ($oRecurrence::getName() == "Second")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on seconds in years.");
+		}
+		
+		if ($oRecurrence::getName() == "Minute")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on minutes in years.");
+		}
+		
+		if ($oRecurrence::getName() == "Hour")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on hours in years.");
+		}
+		
+		if ($oRecurrence::getName() == "Day")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on days in years.");
+		}
+		
+		if ($oRecurrence::getName() == "Week")
+		{
+			throw new Exception\NotImplementedException("Unable to set date/time based on weeks in years.");
+		}
+		
+		if ($oRecurrence::getName() == "Month")
+		{
+			$dDate->setDate($iYear, $iValue, $iDay);
+		}
+		
+		return $dDate;
 	}
 	
 	public static function resetDate(\DateTime $dDate) : \DateTime
