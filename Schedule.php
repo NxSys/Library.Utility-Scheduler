@@ -111,6 +111,7 @@ class Schedule
 			{
 				if ($i == $iPeriodicity)
 				{
+					
 					$oHighestContainer = $this->getHighestContainer();
 					$dReferenceDateTime = $oHighestContainer->incrementDate($dReferenceDateTime);
 					$dReferenceDateTime = $this->resetReferenceDate($dReferenceDateTime);
@@ -280,11 +281,61 @@ class Schedule
 			}
 			
 			if ($sTemporalUnit == get_class($oHighestContainer))
-			{
+			{	
 				return $dReferenceDate;
 			}
 			
 			$sLastTemporalUnit = $sTemporalUnit;
+		}
+	}
+	
+	protected function cronRangeToSet($s, $mod)
+	{
+		$aMonthNames = ['Jan' => '1', 'Feb' => '2', 'Mar' => '3', 'Apr' => '4', 'May' => '5', 'Jun' => '6', 'Jul' => '7', 'Aug' => '8', 'Sep' => '9', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'];
+		$aDayNames = ['Mon' => '1', 'Tue' => '2', 'Wed' => '3', 'Thu' => '4', 'Fri' => '5', 'Sat' => '6', 'Sun' => '7'];
+		$s = str_replace(array_keys($aMonthNames), array_values($aMonthNames), $s);
+		$s = str_replace(array_keys($aDayNames), array_values($aDayNames), $s);
+		
+		$aSet = [];
+		
+		foreach (explode(',', $s) as $iIndex => $sVal)
+		{
+			if (stripos($sVal, '-') !== false)
+			{
+				$aRange = explode('-', $sVal);
+				for($c = (int) $aRange[0]; $c <= (int) $aRange[1]; $c++)
+				{
+					$aSet[] = $c + $mod;
+				}
+			}
+			else
+			{
+				$aSet[] = (int) $sVal + $mod;
+			}
+		}
+		
+		return $aSet;
+	}
+	
+	public function fromCron($sCronString)
+	{
+		$cronArr = explode(' ', $sCronString);
+
+		$cronPairs = [[new Temporal\Minute, new Temporal\Hour, 0],
+						[new Temporal\Hour, new Temporal\Day, 0],
+						[new Temporal\Day, new Temporal\Month, -1],
+						[new Temporal\Month, new Temporal\Year, -1]];
+						
+
+		foreach ($cronArr as $index => $val)
+		{
+			
+			$rule = new Rule($cronPairs[$index][0], $cronPairs[$index][1]);
+			if ($val != '*')
+			{
+				$rule->createSet($this->cronRangeToSet($val, $cronPairs[$index][2]));
+			}
+			$this->addRule($rule);
 		}
 	}
 }

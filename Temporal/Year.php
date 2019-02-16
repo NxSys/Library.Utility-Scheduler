@@ -225,7 +225,7 @@ class Year extends Instant implements TemporalInterface
 		
 		if ($oRecurrence::getName() == "Month")
 		{
-			$dDate->setDate($iYear, $iValue, $iDay);
+			$dDate->setDate($iYear, $iValue+1, $iDay);
 		}
 		
 		return $dDate;
