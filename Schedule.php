@@ -291,6 +291,11 @@ class Schedule
 	
 	protected function cronRangeToSet($s, $mod)
 	{
+		if (stripos($s, '/') !== false)
+		{
+			throw new Exception\NotImplementedException("Cron strings do not currently support mixing intervals and sets.");
+		}
+		
 		$aMonthNames = ['Jan' => '1', 'Feb' => '2', 'Mar' => '3', 'Apr' => '4', 'May' => '5', 'Jun' => '6', 'Jul' => '7', 'Aug' => '8', 'Sep' => '9', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'];
 		$aDayNames = ['Mon' => '1', 'Tue' => '2', 'Wed' => '3', 'Thu' => '4', 'Fri' => '5', 'Sat' => '6', 'Sun' => '7'];
 		$s = str_replace(array_keys($aMonthNames), array_values($aMonthNames), $s);
@@ -331,9 +336,27 @@ class Schedule
 		{
 			
 			$rule = new Rule($cronPairs[$index][0], $cronPairs[$index][1]);
-			if ($val != '*')
+			if ($val != '*' && stripos($val, '/') === false)
 			{
 				$rule->createSet($this->cronRangeToSet($val, $cronPairs[$index][2]));
+			}
+			else
+			{
+				if (stripos($val, ',') !== false)
+				{
+					throw new Exception\NotImplementedException("Cron strings do not currently support mixing intervals and sets.");
+				}
+				
+				$recurrenceArr = explode("/", $val);
+				
+				$rule->Interval = (int) $recurrenceArr[1];
+				
+				if (stripos($recurrenceArr[0], '-') !== false)
+				{
+					$rangeArr = explode('-', $recurrenceArr[0]);
+					$rule->Start = (int) $rangeArr[0] + $cronPairs[$index][2];
+					$rule->End = (int) $rangeArr[1] + $cronPairs[$index][2];
+				}
 			}
 			$this->addRule($rule);
 		}
