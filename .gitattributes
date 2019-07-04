@@ -1,0 +1,20 @@
+* text=auto !eol
+Exception/InvalidRuleException.php -text
+Exception/NotImplementedException.php -text
+Exception/RuleConflictException.php -text
+Exception/SchedulerException.php -text
+Exception/TemporalException.php -text
+/Item.php -text
+/Rule.php -text
+/Schedule.php -text
+/Set.php -text
+Temporal/Day.php -text
+Temporal/Hour.php -text
+Temporal/Instant.php -text
+Temporal/Minute.php -text
+Temporal/Month.php -text
+Temporal/Second.php -text
+Temporal/Week.php -text
+Temporal/Year.php -text
+/TemporalInterface.php -text
+/composer.json -text
