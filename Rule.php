@@ -175,6 +175,6 @@ class Rule
 	
 	protected static function gcd(int $a, int $b) : int
 	{
-		return ($a % $b) ? $this::gcd($b,$a % $b) : $b;
+		return ($a % $b) ? static::gcd($b,$a % $b) : $b;
 	}
 }
